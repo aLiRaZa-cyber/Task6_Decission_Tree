@@ -1,0 +1,207 @@
+---
+title: "Task#6 Decision Tree"
+subtite: "Create the Decision Tree classifier and Visualize it graphically"
+author: "Ali Raza"
+date: "9/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+## Decision Tree in R
+
+Decision trees are a graphical method to represent choices and their consequences. It is a popular data mining and machine learning technique. It is a type of supervised learning algorithm and can be used for regression as well as classification problems.
+
+## Creating Decision Tree by using R:
+### Classification Decision Tree:
+
+A classification tree is very similar to a regression tree except it deals with categorical or qualitative variables. In a classification tree, the splits in data are made based on questions with qualitative answers, therefore, the residual sum of squares cannot be used as a measure here. Instead, classification trees are created based on measures like classification error rate, cross-entropy, etc..
+
+### Loading required R packages For Decision Tree:
+
+* Load Recquired Packages:
+  + **datasets:** for loading iris datasets.
+  + **rpart.plot** Plot an rpart model, automatically tailoring the plot for the model's response type. 
+  + **rpart:** Rpart is a powerful machine learning library in R that is used for building classification and regression trees. 
+  
+### Data Sets:
+The task is to used Iris data sets:
+
+#### Data Source:
+This data set is already build into RStudio, so it is easy to find.
+
+Iris data set is not huge, probably advanced R programmes or data scientists would find it rather unsuitable, but for, as a lady and begginer in big data analytics, this is a great place to start and show some simple tricks to plot and analyze this data set.
+
+### Loading Data sets
+Load the Iris data sets that is mandatory for completing the task:
+```{r echo=TRUE}
+library(datasets)
+data("iris")
+```
+Iris dataset gives the measurements in centimeters of the variables sepal length and width and petal length and width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+### To inspect dataset:
+Check the upper value of datasets:
+```{r echo = TRUE}
+head(iris, 10)
+```
+
+Check the bottom, value of dataset:
+```{r echo= TRUE}
+tail(iris, 10)
+```
+
+According the view of dataset the same type of data repeats agains, thats creates an issues while training and testing the datasets.
+
+For this we shuffle the datasets.
+
+### Shuffling:
+ We shufle the datasets for training and testing the datasets.
+```{r echo=TRUE}
+shuffle_iris <- sample(1 : nrow(iris))
+head(shuffle_iris)
+
+
+#to initialized the shuffle value
+iris_data <- iris[shuffle_iris,]
+```
+ 
+ To inspexct the shufle value:
+ 
+```{r echo = TRUE}
+ head(iris_data,10)
+```
+ 
+```{r echo = TRUE}
+ tail(iris_data,10)
+```
+
+So, according to the table the iris data is **randomized**in datasets thats good for **training** and **testing phase**.
+
+### Model
+
+Create a model of training and testing the data for decission tree.
+```{r echo=TRUE}
+create_train_test <- function(data, size = 0.8, train = TRUE) {
+  n_row = nrow(data)
+  total_row = size * n_row
+  train_sample <- 1: total_row
+  if (train == TRUE) {
+    return (data[train_sample, ])
+  } else {
+    return (data[-train_sample, ])
+  }
+}
+
+```
+
+## Create Dimension Tree According to Species 
+
+### Train the Datasets:
+
+```{r echo=TRUE}
+iris_train <- create_train_test(iris_data , size = 0.8, train = TRUE)
+```
+
+### Testing the Datasets
+```{r echo=TRUE}
+iris_test <- create_train_test(iris_data , size = 0.8, train = FALSE)
+```
+
+### Comparison:
+
+**Rows and Columns of Randomized Dataset:**
+```{r eval=TRUE}
+dim(iris_data)
+```
+ 
+
+**Rows and Columns of Training Dataset:**
+```{r eval=TRUE}
+dim(iris_train)
+```
+
+
+**Rows and Columns of Testing Dataset:**
+```{r eval=TRUE}
+dim(iris_test)
+```
+
+### Verify
+
+To verify the randomized datasets according to species
+
+**In Training Case**
+```{r echo=TRUE}
+prop.table(table(iris_train$Species)) # Returns conditional proportions given margins,
+```
+
+**In Testing Case**
+```{r echo=TRUE}
+prop.table(table(iris_test$Species))
+```
+
+In both case the result is about 33 percent same.
+
+
+### Build the model:
+```{r echo=TRUE}
+library(rpart) #for training
+library(rpart.plot) #for plot the decission tree
+```
+ 
+Model: 
+```{r echo=TRUE}
+fit <- rpart(iris_train$Species~. , data = iris_train , method = "class")
+rpart.plot(fit, extra = 106)
+```
+
+### Make a Prediction:
+Predict the test dataset:
+```{r echo=TRUE}
+predict_unseen <- predict(fit, iris_test, type = "class")
+table_mat <- table(iris_test$Species ,predict_unseen)
+table_mat
+```
+
+###Check Accuracy Rate:
+```{r echo=TRUE}
+accuracy_test <- sum(diag(table_mat)) / sum(table_mat)
+print(paste("Accuracy for Test is ", accuracy_test))
+```
+
+## Decission Tree By Petal Length
+
+```{r echo=TRUE}
+prop.table(table(iris_train$Petal.Length))
+```
+
+
+```{r echo=TRUE}
+prop.table(table(iris_test$Petal.Length))
+```
+
+Model:
+
+
+```{r echo=TRUE}
+fit_1 <- rpart(iris_train$Petal.Length~. , data = iris_train , method = "class")
+rpart.plot(fit_1, extra = 106)
+```
+
+```{r echo=TRUE}
+predict_unseen <- predict(fit, iris_test, type = "class")
+table_mat <- table(iris_test$Petal.Length ,predict_unseen)
+table_mat
+```
+
+```{r echo=TRUE}
+accuracy_test <- sum(diag(table_mat)) / sum(table_mat)
+print(paste("Accuracy for Test is ", accuracy_test))
+```
